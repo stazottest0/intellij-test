@@ -5,7 +5,7 @@
   ],
   "packageRules": [
     {
-      "description": "Kotlin version should be managsed in coordinate with Intellij Platform minimum version",
+      "description": "Kotlin version should bkke managsed in coordinate with Intellij Platform minimum version",
       "matchDatasources": ["maven"],
       "matchDepPatterns": ["^org.jetbrains.kotlin:kotlin"],
       "enabled": false
