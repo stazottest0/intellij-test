@@ -1,0 +1,85 @@
+<!-- Copyright (c) 2020 Google LLC All rights reserved. -->
+<!-- Use of this source code is governed by a BSD-style -->
+<!-- license that can be found in the LICENSE file. -->
+
+<idea-plugin require-restart="false">
+  <id>com.google.idea.gn</id>
+  <name>GN</name>
+  <vendor
+      url="https://github.com/google/intellij-gn-plugin">The Fuchsia Authors
+  </vendor>
+  <category>Languages</category>
+
+  <description><![CDATA[
+        <a href="https://gn.googlesource.com/gn">GN</a> Plugin for IntelliJ.<br>
+    <h2> Features </h2>
+    <ul>
+      <li>Basic syntax highlighting</li>
+      <li>Very basic target parsing</li>
+      <li>Click-through navigation for resolved label references</li>
+      <li>Very basic formatting</li>
+    </ul>
+    <p>Note that this is a GN language plugin, it helps you author and edit .gn
+    files; it does not support importing a project model from a GN-based
+    project.</p>
+    ]]></description>
+
+  <depends>com.intellij.modules.lang</depends>
+
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="GN" implementationClass="com.google.idea.gn.GnFileType" language="gn"
+        extensions="gn;gni" fieldName="INSTANCE"/>
+    <internalFileTemplate name="Gn File"/>
+
+    <lang.parserDefinition language="gn"
+        implementationClass="com.google.idea.gn.GnParserDefinition"/>
+    <lang.syntaxHighlighterFactory language="gn"
+        implementationClass="com.google.idea.gn.GnSyntaxHighlighterFactory"/>
+
+    <completion.contributor language="gn"
+        implementationClass="com.google.idea.gn.GnCompletionContributor"/>
+
+    <annotator language="gn" implementationClass="com.google.idea.gn.GnAnnotator"/>
+    <lang.quoteHandler language="gn"
+        implementationClass="com.google.idea.gn.GnQuoteHandler"/>
+    <typedHandler implementation="com.google.idea.gn.GnTypedHandler"/>
+    <lang.braceMatcher implementationClass="com.google.idea.gn.GnBraceMatcher"
+        language="gn"/>
+    <lang.formatter language="gn"
+        implementationClass="com.google.idea.gn.GnFormattingBuilder"/>
+    <lang.elementManipulator forClass="com.google.idea.gn.psi.impl.GnStringExprImpl"
+                             implementationClass="com.google.idea.gn.manipulators.GnStringExprManipulator"/>
+    <enterBetweenBracesDelegate implementationClass="com.google.idea.gn.GnEnterDelegate"
+        language="gn"/>
+    <colorSettingsPage implementation="com.google.idea.gn.GnColorSettingsPage"/>
+
+    <documentationProvider implementation="com.google.idea.gn.GnDocumentationProvider"/>
+
+    <lang.commenter language="gn" implementationClass="com.google.idea.gn.GnCommenter"/>
+    <lang.foldingBuilder language="gn" implementationClass="com.google.idea.gn.GnFoldingBuilder"/>
+
+    <!-- configs -->
+
+    <projectService
+        serviceInterface="com.google.idea.gn.config.GnSettingsService"
+        serviceImplementation="com.google.idea.gn.config.GnSettingsServiceImpl"/>
+
+    <projectConfigurable instance="com.google.idea.gn.config.GnProjectConfigurable"
+        displayName="Gn"
+        groupId="language"
+        id="language.gn"/>
+
+  </extensions>
+
+  <actions>
+    <!--suppress PluginXmlCapitalization -->
+    <action class="com.google.idea.gn.actions.NewBuildFileAction" id="Gn.NewBuildFile"
+            text="BUILD.gn" description="Create new BUILD.gn file"
+            icon="/icons/gn.svg">
+      <add-to-group group-id="NewGroup" anchor="after"
+          relative-to-action="FileTemplateSeparatorGroup"/>
+    </action>
+
+  </actions>
+</idea-plugin>

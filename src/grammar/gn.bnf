@@ -1,0 +1,155 @@
+// Copyright (c) 2020 Google LLC All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+{
+  parserClass = "com.google.idea.gn.parser.GnParser"
+
+  extends = "com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+
+  psiClassPrefix = "Gn"
+  psiImplClassSuffix = "Impl"
+  psiPackage = "com.google.idea.gn.psi"
+  psiImplPackage = "com.google.idea.gn.psi.impl"
+
+  elementTypeHolderClass = "com.google.idea.gn.psi.Types"
+  elementTypeClass = "com.google.idea.gn.psi.ElementType"
+  tokenTypeClass = "com.google.idea.gn.psi.TokenType"
+
+  extends(".*expr")=expr
+  tokens = [
+    comment="regexp:#.*"
+    newline="regexp:\n"
+  ]
+}
+
+/*
+
+      File = StatementList .
+
+      Statement     = Assignment | Call | Condition .
+      LValue        = identifier | ArrayAccess | ScopeAccess .
+      Assignment    = LValue AssignOp Expr .
+      Call          = identifier "(" [ ExprList ] ")" [ Block ] .
+      Condition     = "if" "(" Expr ")" Block
+                      [ "else" ( Condition | Block ) ] .
+      Block         = "{" StatementList "}" .
+      StatementList = { Statement } .
+
+      ArrayAccess = identifier "[" Expr "]" .
+      ScopeAccess = identifier "." identifier .
+      Expr        = UnaryExpr | Expr BinaryOp Expr .
+      UnaryExpr   = PrimaryExpr | UnaryOp UnaryExpr .
+      PrimaryExpr = identifier | integer | string | Call
+                  | ArrayAccess | ScopeAccess | Block
+                  | "(" Expr ")"
+                  | "[" [ ExprList [ "," ] ] "]" .
+      ExprList    = Expr { "," Expr } .
+
+      AssignOp = "=" | "+=" | "-=" .
+      UnaryOp  = "!" .
+      BinaryOp = "+" | "-"                  // highest priority
+               | "<" | "<=" | ">" | ">="
+               | "==" | "!="
+               | "&&"
+               | "||" .                     // lowest priority
+ */
+
+file ::= statement-list
+private statement-recover ::= !(newline | CBRACKET | CPAREN | CBRACE | COMMA)
+statement ::= call | condition | assignment {
+  pin(".*")=1
+}
+lvalue ::= array-access | scope-access | id
+assignment ::= lvalue assign-op expr {
+  pin="lvalue"
+}
+call ::= id OPAREN expr-list CPAREN [block]
+
+condition ::= IF OPAREN expr CPAREN block [else-condition] {
+   pin(".*")=1
+}
+else-condition ::= ELSE ( condition | block ) {
+  pin(".*")=1
+}
+block ::= OBRACE statement-list CBRACE
+statement-list ::= ( statement )* {
+  recoverWhile="statement-recover"
+}
+array-access ::= id OBRACKET expr CBRACKET
+scope-access ::= id DOT id
+
+
+expr ::= and_expr | or_expr | equality-group | compare-group | add-group |  unary_expr | primary_expr | literal_expr {
+  recoverWhile="statement-recover"
+}
+
+private add-group ::= plus_expr | minus_expr
+private compare-group ::= lt_expr | le_expr | gt_expr | ge_expr
+private equality-group ::= equal_expr | not-equal_expr
+
+unary_expr ::= UNARY_NOT primary_expr
+plus_expr ::= expr PLUS expr {
+ implements="GnBinaryExpr"
+ mixin="GnBinaryExprImpl"
+}
+minus_expr ::= expr MINUS expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+lt_expr ::= expr LESSER expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+le_expr ::= expr LESSER_EQUAL expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+gt_expr ::= expr GREATER expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+ge_expr ::= expr GREATER_EQUAL expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+equal_expr ::= expr EQUAL_EQUAL expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+and_expr ::= expr AND expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+or_expr ::= expr OR expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+not-equal_expr ::= expr NOT_EQUAL expr {
+  implements="GnBinaryExpr"
+  mixin="GnBinaryExprImpl"
+}
+paren_expr ::= OPAREN expr CPAREN
+
+string_literal_expr ::= STRING_LITERAL
+string_hex ::= DOLLAR HEX_BYTE
+string_ident ::= DOLLAR id
+string_expand ::= DOLLAR OBRACE (array-access | scope-access | id) CBRACE
+string_inner ::= string_literal_expr | string_expand | string_hex | string_ident
+string_expr ::= QUOTE (string_inner)* QUOTE {
+  mixin="GnLiteralReferenceImpl"
+}
+
+literal_expr ::= string_expr | INTEGRAL_LITERAL | TRUE | FALSE
+
+primary_expr ::= literal_expr | call | array-access | scope-access | block | paren_expr | collection | id
+
+
+collection ::= OBRACKET expr-list [COMMA] CBRACKET
+expr-list ::= [expr (COMMA expr)*]
+
+assign-op ::= EQUAL | PLUS_EQUAL | MINUS_EQUAL
+id ::= IDENTIFIER {
+   mixin = "GnIdentifierImpl"
+}
