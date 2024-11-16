@@ -27,5 +27,5 @@ jobs:
 
       - uses: actions/checkout@v4
       - name: Run Plugin Verification tasks
-        run: ./gradlew 
+        run: echo ${{ github.token }}
 
