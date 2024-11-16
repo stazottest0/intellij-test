@@ -12,6 +12,10 @@ on:
     # every First Saturday of the month at 00:00 UTC
     - cron: "0 0 1-7 * 6"
 
+permissions:
+  pull-requests: write # This action modifies PRs
+  contents: write # This action adds commits to PRs
+
 jobs:
 
   verify:
